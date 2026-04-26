@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Music, Mic, HandHeart, Sparkles, Headphones, Zap } from "lucide-react";
+import { BookOpen, Music, Mic, HandHeart, Sparkles, Headphones, Zap, Trophy } from "lucide-react";
 
 type Mode = {
   id: string;
@@ -11,28 +11,32 @@ type Mode = {
   to: string;
   params?: Record<string, string>;
   badge?: string;
+  xp: number;
 };
 
 const MODES: Mode[] = [
   {
     id: "rush",
     title: "Match Rush",
-    subtitle: "Hordas rápidas 🔥",
+    subtitle: "Vocabulário contra o tempo",
     icon: <Zap className="size-7" />,
     gradient: "bg-gradient-flame",
     shadow: "shadow-chunky",
     to: "/rush",
-    badge: "Novo",
+    badge: "Arcade",
+    xp: 20,
   },
   {
     id: "psalm",
     title: "Salmo do Dia",
-    subtitle: "Ordene o versículo",
+    subtitle: "Lição completa da jornada",
     icon: <BookOpen className="size-7" />,
     gradient: "bg-gradient-hero",
     shadow: "shadow-chunky",
     to: "/lesson/$day",
-    params: { day: "4" },
+    params: { day: "1" },
+    badge: "Principal",
+    xp: 15,
   },
   {
     id: "praise",
@@ -43,6 +47,7 @@ const MODES: Mode[] = [
     shadow: "shadow-chunky",
     to: "/devotional/$id",
     params: { id: "amazing-grace" },
+    xp: 12,
   },
   {
     id: "prayer",
@@ -53,6 +58,7 @@ const MODES: Mode[] = [
     shadow: "shadow-chunky-gold",
     to: "/devotional/$id",
     params: { id: "lords-prayer" },
+    xp: 10,
   },
   {
     id: "match",
@@ -62,7 +68,8 @@ const MODES: Mode[] = [
     gradient: "bg-success",
     shadow: "shadow-chunky-success",
     to: "/lesson/$day",
-    params: { day: "4" },
+    params: { day: "1" },
+    xp: 8,
   },
   {
     id: "speak",
@@ -72,7 +79,8 @@ const MODES: Mode[] = [
     gradient: "bg-gradient-hero",
     shadow: "shadow-chunky",
     to: "/lesson/$day",
-    params: { day: "4" },
+    params: { day: "1" },
+    xp: 8,
   },
   {
     id: "listen",
@@ -82,7 +90,8 @@ const MODES: Mode[] = [
     gradient: "bg-accent",
     shadow: "shadow-chunky",
     to: "/lesson/$day",
-    params: { day: "4" },
+    params: { day: "1" },
+    xp: 8,
   },
 ];
 
@@ -92,11 +101,13 @@ export function GameModeHub() {
       <div className="flex items-end justify-between px-1 mb-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Modos de prática
+            Treino diário
           </p>
-          <h2 className="font-display text-2xl font-bold">Jogue & Ore</h2>
+          <h2 className="font-display text-2xl font-bold">Jogue, ouça e ore</h2>
         </div>
-        <span className="text-2xl">✨</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-card px-2 py-1 text-xs font-extrabold text-gold shadow-sm border border-border">
+          <Trophy className="size-3.5" /> 365
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -112,13 +123,16 @@ export function GameModeHub() {
                 {m.badge}
               </span>
             )}
-            <div className="size-11 rounded-xl bg-white/20 flex items-center justify-center">
-              {m.icon}
+            <div className="flex items-start justify-between gap-2">
+              <div className="size-11 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
+                {m.icon}
+              </div>
+              <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[10px] font-extrabold">+{m.xp} XP</span>
             </div>
             <p className="mt-3 font-display text-base font-bold leading-tight">
               {m.title}
             </p>
-            <p className="text-[11px] opacity-90 font-semibold mt-0.5">
+            <p className="text-[11px] opacity-90 font-semibold mt-0.5 leading-tight">
               {m.subtitle}
             </p>
           </Link>

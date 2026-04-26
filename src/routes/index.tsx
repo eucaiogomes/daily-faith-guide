@@ -5,7 +5,7 @@ import { DailyGoalCard } from "@/components/DailyGoalCard";
 import { JourneyPath, type Lesson } from "@/components/JourneyPath";
 import { GameModeHub } from "@/components/GameModeHub";
 import { getPsalmByDay, getChapters, TOTAL_DAYS } from "@/data/psalms";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpenCheck, ChevronLeft, ChevronRight, Flame, Music, Target } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,7 +38,7 @@ function Index() {
     // Until persistence is wired up, leave all future days unlocked so users
     // can freely explore the 365-day journey.
     state: p.day < CURRENT_DAY ? "done" : p.day === CURRENT_DAY ? "current" : "done",
-    kind: "verse",
+    kind: p.day % 30 === 0 ? "milestone" : p.day % 7 === 0 ? "praise" : p.day % 5 === 0 ? "speak" : "verse",
   }));
 
   return (
@@ -54,6 +54,8 @@ function Index() {
           verseEn={v1.en}
           versePt={v1.pt}
         />
+
+        <ProgressQuest />
 
         <GameModeHub />
 
@@ -92,6 +94,41 @@ function Index() {
           "Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho." — Salmo 119:105
         </p>
       </main>
+    </div>
+  );
+}
+
+function ProgressQuest() {
+  return (
+    <section className="grid grid-cols-3 gap-3">
+      <QuestStat icon={<Target className="size-4" />} label="Meta" value="30 XP" tone="bg-primary/10 text-primary" />
+      <QuestStat icon={<Flame className="size-4" />} label="Sequência" value="3 dias" tone="bg-streak/10 text-streak" />
+      <QuestStat icon={<BookOpenCheck className="size-4" />} label="Trilha" value="365" tone="bg-success/10 text-success" />
+      <div className="col-span-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Próxima recompensa</p>
+            <h2 className="font-display text-xl font-bold">Baú de louvor no dia 7</h2>
+          </div>
+          <div className="size-11 rounded-xl bg-gradient-gold text-primary-foreground flex items-center justify-center shadow-chunky-gold">
+            <Music className="size-5" />
+          </div>
+        </div>
+        <div className="mt-3 h-2.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-full w-[14%] rounded-full bg-gradient-gold" />
+        </div>
+        <p className="mt-2 text-xs font-semibold text-muted-foreground">Complete Salmos, pronúncia e louvor para avançar mais rápido.</p>
+      </div>
+    </section>
+  );
+}
+
+function QuestStat({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-sm">
+      <div className={`mx-auto flex size-8 items-center justify-center rounded-xl ${tone}`}>{icon}</div>
+      <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="font-display text-base font-bold leading-tight">{value}</p>
     </div>
   );
 }
