@@ -18,6 +18,7 @@ export const Route = createFileRoute("/lesson/$day")({
 });
 
 type Step =
+  | { kind: "prayer"; psalm: PsalmLesson; lines: string[]; focus: string }
   | { kind: "translate"; en: string; pt: string; words: string[] }
   | { kind: "choice"; prompt: string; options: { text: string; correct: boolean }[] }
   | { kind: "fill"; sentence: string[]; blank: number; options: string[]; answer: string }
@@ -29,10 +30,18 @@ type Step =
   | { kind: "speak"; en: string; pt: string };
 
 /** Generates a structured Psalm lesson:
- *  intro → flashcards (vocab) → match → translate → listen → fill → order → speak (memory verse).
+ *  prayer → intro → flashcards (vocab) → match → translate → listen → fill → order → speak (memory verse).
  */
 function buildPsalmSteps(psalm: PsalmLesson): Step[] {
-  const steps: Step[] = [{ kind: "intro", psalm }];
+  const steps: Step[] = [
+    {
+      kind: "prayer",
+      psalm,
+      focus: psalm.theme,
+      lines: buildGuidedPrayer(psalm),
+    },
+    { kind: "intro", psalm },
+  ];
 
   // 1. Flashcards for the first 2 keywords
   for (const w of psalm.keywords.slice(0, 2)) {
@@ -124,6 +133,16 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function buildGuidedPrayer(psalm: PsalmLesson): string[] {
+  const keyword = psalm.keywords[0];
+  return [
+    "Senhor, prepara meu coração para aprender com a Tua Palavra hoje.",
+    `Guia minha mente no tema de ${psalm.theme.toLowerCase()} e me ajuda a praticar inglês com alegria.`,
+    keyword ? `Que eu memorize ${keyword.en} — ${keyword.pt} — e use essa palavra com fé.` : "Que cada palavra fique guardada no meu coração.",
+    "Amém.",
+  ];
+}
+
 function LessonPage() {
   const { day } = Route.useParams();
   const psalm = useMemo(() => getPsalmByDay(parseInt(day, 10) || 1), [day]);
@@ -164,6 +183,7 @@ function LessonPage() {
 
       <main className="flex-1 max-w-md mx-auto w-full px-5 py-6 flex flex-col">
         <div key={idx} className="animate-pop-in flex-1">
+          {step.kind === "prayer" && <PrayerStep step={step} />}
           {step.kind === "intro" && <IntroStep psalm={step.psalm} />}
           {step.kind === "flash" && <FlashCard step={step} />}
           {step.kind === "translate" && <TranslateExercise step={step} feedback={feedback} setFeedback={setFeedback} />}
@@ -182,6 +202,39 @@ function LessonPage() {
 }
 
 /* ---------- Exercises ---------- */
+
+function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
+  return (
+    <div className="pt-2 text-center">
+      <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-gold shadow-chunky-gold">
+        <HandHeart className="size-10 text-primary-foreground" />
+      </div>
+      <p className="mt-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Oração guiada • Dia {step.psalm.day}
+      </p>
+      <h1 className="mt-1 font-display text-3xl font-bold">Antes de começar</h1>
+      <p className="mt-2 text-sm font-semibold text-muted-foreground">
+        Respire fundo e entregue este momento a Deus.
+      </p>
+
+      <div className="mt-6 rounded-3xl border-2 border-border bg-card p-5 text-left shadow-soft">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+          Foco espiritual • {step.focus}
+        </p>
+        <div className="mt-4 space-y-3">
+          {step.lines.map((line, index) => (
+            <p key={line} className="flex gap-3 text-sm font-semibold leading-relaxed">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-extrabold text-secondary-foreground">
+                {index + 1}
+              </span>
+              <span>{line}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function IntroStep({ psalm }: { psalm: PsalmLesson }) {
   const { speak } = useSpeech();
@@ -624,11 +677,11 @@ function SpeakExercise({ step, feedback, setFeedback }: { step: Extract<Step, { 
 /* ---------- Footer & Complete ---------- */
 
 function FooterAction({ step, feedback, onContinue, setFeedback }: { step: Step; feedback: string; onContinue: () => void; setFeedback: (f: "idle" | "right" | "wrong") => void }) {
-  if (step.kind === "flash" || step.kind === "intro") {
+  if (step.kind === "flash" || step.kind === "intro" || step.kind === "prayer") {
     return (
       <div className="mt-6">
         <button onClick={onContinue} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold uppercase tracking-wide shadow-chunky active:translate-y-1 active:shadow-none">
-          {step.kind === "intro" ? "Começar lição" : "Continuar"}
+          {step.kind === "prayer" ? "Amém, começar o dia" : step.kind === "intro" ? "Começar lição" : "Continuar"}
         </button>
       </div>
     );
