@@ -1,7 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { PushNotifications } from "@capacitor/push-notifications";
-import { supabase } from "@/integrations/supabase/client";
 import { saveReminderSettings } from "@/lib/offlineMission";
 
 export const isNativeApp = () => Capacitor.isNativePlatform();
@@ -55,6 +54,7 @@ export async function disableDailyReminder() {
 
 export async function registerForPushNotifications() {
   if (!isNativeApp()) return { registered: false, reason: "native-only" };
+  if (typeof window === "undefined") return { registered: false, reason: "server-render" };
 
   const permission = await PushNotifications.requestPermissions();
   if (permission.receive !== "granted") return { registered: false, reason: "permission-denied" };
@@ -66,6 +66,7 @@ export async function registerForPushNotifications() {
 
     PushNotifications.addListener("registration", async ({ value }) => {
       window.clearTimeout(timeout);
+      const { supabase } = await import("@/integrations/supabase/client");
       const { data: auth } = await supabase.auth.getUser();
       const user = auth.user;
 

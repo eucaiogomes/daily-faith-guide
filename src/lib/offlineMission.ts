@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 const COMPLETIONS_KEY = "lumen:offline-mission-completions";
 const SETTINGS_KEY = "lumen:reminder-settings";
 
@@ -61,6 +59,9 @@ export async function syncOfflineMissions() {
   const completions = getOfflineCompletions();
   const pending = completions.filter((item) => !item.synced);
   if (!pending.length || typeof navigator !== "undefined" && !navigator.onLine) return { synced: 0, pending: pending.length };
+  if (typeof window === "undefined") return { synced: 0, pending: pending.length };
+
+  const { supabase } = await import("@/integrations/supabase/client");
 
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
