@@ -18,7 +18,7 @@ export const Route = createFileRoute("/lesson/$day")({
 });
 
 type Step =
-  | { kind: "prayer"; psalm: PsalmLesson; lines: string[]; focus: string }
+  | { kind: "prayer"; psalm: PsalmLesson; lines: GuidedPrayerLine[]; focus: string }
   | { kind: "translate"; en: string; pt: string; words: string[] }
   | { kind: "choice"; prompt: string; options: { text: string; correct: boolean }[] }
   | { kind: "fill"; sentence: string[]; blank: number; options: string[]; answer: string }
@@ -133,14 +133,90 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function buildGuidedPrayer(psalm: PsalmLesson): string[] {
-  const keyword = psalm.keywords[0];
-  return [
-    "Senhor, prepara meu coração para aprender com a Tua Palavra hoje.",
-    `Guia minha mente no tema de ${psalm.theme.toLowerCase()} e me ajuda a praticar inglês com alegria.`,
-    keyword ? `Que eu memorize ${keyword.en} — ${keyword.pt} — e use essa palavra com fé.` : "Que cada palavra fique guardada no meu coração.",
-    "Amém.",
-  ];
+type GuidedPrayerLine = { en: string; pt: string; highlight?: string };
+
+const GUIDED_PRAYERS: GuidedPrayerLine[][] = [
+  [
+    { en: "Dear God, thank You for this new day.", pt: "Querido Deus, obrigado por este novo dia.", highlight: "God" },
+    { en: "As we begin, we ask for Your presence with us.", pt: "Ao começarmos, pedimos a Tua presença conosco.", highlight: "presence" },
+    { en: "Give us wisdom to understand, strength to keep going, and hearts willing to learn and grow.", pt: "Dá-nos sabedoria para entender, força para continuar e corações dispostos a aprender e crescer.", highlight: "wisdom" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, we come before You with open hearts.", pt: "Senhor, chegamos diante de Ti com corações abertos.", highlight: "Lord" },
+    { en: "Guide our minds, calm our thoughts, and help us receive what we need today.", pt: "Guia nossas mentes, acalma nossos pensamentos e ajuda-nos a receber o que precisamos hoje.", highlight: "Guide" },
+    { en: "Let this moment be filled with peace and purpose.", pt: "Que este momento seja cheio de paz e propósito.", highlight: "peace" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, thank You for the opportunity to learn and grow.", pt: "Deus, obrigado pela oportunidade de aprender e crescer.", highlight: "opportunity" },
+    { en: "Help us to be attentive, patient, and humble, so we can truly understand and use what we receive today.", pt: "Ajuda-nos a ser atentos, pacientes e humildes, para realmente entender e usar o que recebemos hoje.", highlight: "patient" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear Lord, as we start this moment, we ask for clarity and focus.", pt: "Querido Senhor, ao iniciar este momento, pedimos clareza e foco.", highlight: "clarity" },
+    { en: "Remove distractions and fill our minds with good thoughts and understanding.", pt: "Remove as distrações e enche nossas mentes com bons pensamentos e entendimento.", highlight: "understanding" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, we trust You with this time.", pt: "Pai, confiamos este tempo a Ti.", highlight: "Father" },
+    { en: "Give us discipline to stay focused, courage to try, and wisdom to learn even from challenges.", pt: "Dá-nos disciplina para manter o foco, coragem para tentar e sabedoria para aprender até com os desafios.", highlight: "courage" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, open our hearts and minds today.", pt: "Deus, abre nossos corações e mentes hoje.", highlight: "open" },
+    { en: "Help us not only to learn, but to grow as people, becoming wiser, calmer, and more patient.", pt: "Ajuda-nos não apenas a aprender, mas a crescer como pessoas, tornando-nos mais sábios, calmos e pacientes.", highlight: "grow" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, let this be a time of peace and learning.", pt: "Senhor, que este seja um tempo de paz e aprendizado.", highlight: "learning" },
+    { en: "Help us stay present, think clearly, and absorb everything that will help us grow.", pt: "Ajuda-nos a estar presentes, pensar com clareza e absorver tudo que nos ajudará a crescer.", highlight: "present" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear God, we ask for calm minds and focused hearts.", pt: "Querido Deus, pedimos mentes calmas e corações focados.", highlight: "focused" },
+    { en: "Help us to be present in this moment and give our best in everything we do.", pt: "Ajuda-nos a estar presentes neste momento e dar o nosso melhor em tudo que fazemos.", highlight: "best" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, guide our thoughts and give us understanding.", pt: "Pai, guia nossos pensamentos e dá-nos entendimento.", highlight: "thoughts" },
+    { en: "Help us to learn with intention and carry this knowledge with us beyond this moment.", pt: "Ajuda-nos a aprender com intenção e levar este conhecimento além deste momento.", highlight: "knowledge" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, fill this moment with Your peace.", pt: "Senhor, enche este momento com a Tua paz.", highlight: "peace" },
+    { en: "Remove anxiety and confusion, and replace it with clarity, wisdom, and confidence.", pt: "Remove a ansiedade e a confusão, e substitui por clareza, sabedoria e confiança.", highlight: "confidence" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, help us to be patient with ourselves and with the process of learning.", pt: "Deus, ajuda-nos a ser pacientes conosco e com o processo de aprender.", highlight: "patient" },
+    { en: "Give us strength to keep going and not give up.", pt: "Dá-nos força para continuar e não desistir.", highlight: "strength" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear Lord, as we begin, help us to be mindful and focused.", pt: "Querido Senhor, ao começarmos, ajuda-nos a estar atentos e focados.", highlight: "mindful" },
+    { en: "Let this be a time of growth, learning, and inner peace.", pt: "Que este seja um tempo de crescimento, aprendizado e paz interior.", highlight: "growth" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, thank You for this opportunity.", pt: "Pai, obrigado por esta oportunidade.", highlight: "opportunity" },
+    { en: "Help us to value this moment and make the most of it with attention and dedication.", pt: "Ajuda-nos a valorizar este momento e aproveitá-lo ao máximo com atenção e dedicação.", highlight: "dedication" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, guide our minds and give us clarity in everything we do.", pt: "Senhor, guia nossas mentes e dá-nos clareza em tudo que fazemos.", highlight: "clarity" },
+    { en: "Help us to understand deeply and remember what is important.", pt: "Ajuda-nos a entender profundamente e lembrar o que é importante.", highlight: "remember" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, we place this moment in Your hands.", pt: "Deus, colocamos este momento em Tuas mãos.", highlight: "hands" },
+    { en: "Lead us with wisdom, fill us with peace, and help us to grow in knowledge and understanding.", pt: "Conduz-nos com sabedoria, enche-nos de paz e ajuda-nos a crescer em conhecimento e entendimento.", highlight: "wisdom" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+];
+
+function buildGuidedPrayer(psalm: PsalmLesson): GuidedPrayerLine[] {
+  return GUIDED_PRAYERS[(psalm.day - 1) % GUIDED_PRAYERS.length];
 }
 
 function LessonPage() {
@@ -183,7 +259,7 @@ function LessonPage() {
 
       <main className="flex-1 max-w-md mx-auto w-full px-5 py-6 flex flex-col">
         <div key={idx} className="animate-pop-in flex-1">
-          {step.kind === "prayer" && <PrayerStep step={step} />}
+          {step.kind === "prayer" && <PrayerStep step={step} onComplete={next} />}
           {step.kind === "intro" && <IntroStep psalm={step.psalm} />}
           {step.kind === "flash" && <FlashCard step={step} />}
           {step.kind === "translate" && <TranslateExercise step={step} feedback={feedback} setFeedback={setFeedback} />}
@@ -203,7 +279,27 @@ function LessonPage() {
 
 /* ---------- Exercises ---------- */
 
-function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
+function PrayerStep({ step, onComplete }: { step: Extract<Step, { kind: "prayer" }>; onComplete: () => void }) {
+  const [lineIndex, setLineIndex] = useState(0);
+  const [tappedWords, setTappedWords] = useState<Set<string>>(new Set());
+  const [score, setScore] = useState<number | null>(null);
+  const { speak, speaking } = useSpeech();
+  const line = step.lines[lineIndex];
+
+  const tapWord = (word: string) => {
+    const cleaned = word.replace(/[^a-zA-Z']/g, "").toLowerCase();
+    if (!cleaned) return;
+    setTappedWords((prev) => new Set(prev).add(cleaned));
+    speak(word.replace(/[^a-zA-Z']/g, ""));
+  };
+
+  const nextPrayerLine = () => {
+    setScore(null);
+    setTappedWords(new Set());
+    if (lineIndex + 1 >= step.lines.length) onComplete();
+    else setLineIndex(lineIndex + 1);
+  };
+
   return (
     <div className="pt-2 text-center">
       <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-gold shadow-chunky-gold">
@@ -214,24 +310,54 @@ function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
       </p>
       <h1 className="mt-1 font-display text-3xl font-bold">Antes de começar</h1>
       <p className="mt-2 text-sm font-semibold text-muted-foreground">
-        Respire fundo e entregue este momento a Deus.
+        Linha {lineIndex + 1} de {step.lines.length} • ouça, toque nas palavras e repita.
       </p>
 
       <div className="mt-6 rounded-3xl border-2 border-border bg-card p-5 text-left shadow-soft">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-          Foco espiritual • {step.focus}
-        </p>
-        <div className="mt-4 space-y-3">
-          {step.lines.map((line, index) => (
-            <p key={line} className="flex gap-3 text-sm font-semibold leading-relaxed">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-extrabold text-secondary-foreground">
-                {index + 1}
-              </span>
-              <span>{line}</span>
-            </p>
-          ))}
+        <div className="mb-4 flex items-center gap-2">
+          <button
+            onClick={() => speak(line.en)}
+            aria-label="Ouvir oração"
+            className={`flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary active:scale-95 ${speaking ? "animate-pulse" : ""}`}
+          >
+            <Volume2 className="size-5" />
+          </button>
+          <button
+            onClick={() => speak(line.en, { rate: 0.6 })}
+            className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary"
+          >
+            🐢 Devagar
+          </button>
         </div>
+        <p className="font-display text-2xl leading-snug">
+          {line.en.split(" ").map((word, index) => {
+            const cleaned = word.replace(/[^a-zA-Z']/g, "").toLowerCase();
+            const isTapped = tappedWords.has(cleaned);
+            const isHighlight = line.highlight && cleaned === line.highlight.toLowerCase();
+            return (
+              <button
+                key={`${word}-${index}`}
+                onClick={() => tapWord(word)}
+                className={`mb-1 mr-1 inline-block rounded px-1 transition ${isHighlight ? "bg-gold/30 font-bold text-foreground" : "hover:bg-primary/10"} ${isTapped ? "text-primary underline decoration-2 underline-offset-4" : ""}`}
+              >
+                {word}
+              </button>
+            );
+          })}
+        </p>
+        <p className="mt-3 text-sm italic text-muted-foreground">{line.pt}</p>
       </div>
+
+      <div className="mt-6">
+        <p className="mb-3 text-sm text-muted-foreground">
+          {score !== null ? `Pronúncia: ${Math.round(score * 100)}%` : "Toque no microfone e repita a oração"}
+        </p>
+        <PronunciationRecorder expected={line.en} pt={line.pt} threshold={0.6} size="md" onResult={(result) => setScore(result.accuracy)} />
+      </div>
+
+      <button onClick={nextPrayerLine} className="mt-6 w-full rounded-2xl bg-primary py-4 font-bold uppercase tracking-wide text-primary-foreground shadow-chunky active:translate-y-1 active:shadow-none">
+        {lineIndex + 1 >= step.lines.length ? "Amém • Ir para aula" : "Próxima linha"}
+      </button>
     </div>
   );
 }
@@ -677,11 +803,12 @@ function SpeakExercise({ step, feedback, setFeedback }: { step: Extract<Step, { 
 /* ---------- Footer & Complete ---------- */
 
 function FooterAction({ step, feedback, onContinue, setFeedback }: { step: Step; feedback: string; onContinue: () => void; setFeedback: (f: "idle" | "right" | "wrong") => void }) {
-  if (step.kind === "flash" || step.kind === "intro" || step.kind === "prayer") {
+  if (step.kind === "prayer") return null;
+  if (step.kind === "flash" || step.kind === "intro") {
     return (
       <div className="mt-6">
         <button onClick={onContinue} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold uppercase tracking-wide shadow-chunky active:translate-y-1 active:shadow-none">
-          {step.kind === "prayer" ? "Amém, começar o dia" : step.kind === "intro" ? "Começar lição" : "Continuar"}
+          {step.kind === "intro" ? "Começar lição" : "Continuar"}
         </button>
       </div>
     );
