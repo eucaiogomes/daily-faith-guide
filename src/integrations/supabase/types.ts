@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mission_completions: {
+        Row: {
+          completed_on: string
+          created_at: string
+          day: number
+          id: string
+          source: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          completed_on?: string
+          created_at?: string
+          day: number
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          completed_on?: string
+          created_at?: string
+          day?: number
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
