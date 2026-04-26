@@ -203,6 +203,39 @@ function LessonPage() {
 
 /* ---------- Exercises ---------- */
 
+function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
+  return (
+    <div className="pt-2 text-center">
+      <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-gold shadow-chunky-gold">
+        <HandHeart className="size-10 text-primary-foreground" />
+      </div>
+      <p className="mt-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Oração guiada • Dia {step.psalm.day}
+      </p>
+      <h1 className="mt-1 font-display text-3xl font-bold">Antes de começar</h1>
+      <p className="mt-2 text-sm font-semibold text-muted-foreground">
+        Respire fundo e entregue este momento a Deus.
+      </p>
+
+      <div className="mt-6 rounded-3xl border-2 border-border bg-card p-5 text-left shadow-soft">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+          Foco espiritual • {step.focus}
+        </p>
+        <div className="mt-4 space-y-3">
+          {step.lines.map((line, index) => (
+            <p key={line} className="flex gap-3 text-sm font-semibold leading-relaxed">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-extrabold text-secondary-foreground">
+                {index + 1}
+              </span>
+              <span>{line}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function IntroStep({ psalm }: { psalm: PsalmLesson }) {
   const { speak } = useSpeech();
   const v1 = psalm.verses[0];
@@ -644,11 +677,11 @@ function SpeakExercise({ step, feedback, setFeedback }: { step: Extract<Step, { 
 /* ---------- Footer & Complete ---------- */
 
 function FooterAction({ step, feedback, onContinue, setFeedback }: { step: Step; feedback: string; onContinue: () => void; setFeedback: (f: "idle" | "right" | "wrong") => void }) {
-  if (step.kind === "flash" || step.kind === "intro") {
+  if (step.kind === "flash" || step.kind === "intro" || step.kind === "prayer") {
     return (
       <div className="mt-6">
         <button onClick={onContinue} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold uppercase tracking-wide shadow-chunky active:translate-y-1 active:shadow-none">
-          {step.kind === "intro" ? "Começar lição" : "Continuar"}
+          {step.kind === "prayer" ? "Amém, começar o dia" : step.kind === "intro" ? "Começar lição" : "Continuar"}
         </button>
       </div>
     );
