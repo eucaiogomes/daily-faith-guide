@@ -803,11 +803,12 @@ function SpeakExercise({ step, feedback, setFeedback }: { step: Extract<Step, { 
 /* ---------- Footer & Complete ---------- */
 
 function FooterAction({ step, feedback, onContinue, setFeedback }: { step: Step; feedback: string; onContinue: () => void; setFeedback: (f: "idle" | "right" | "wrong") => void }) {
-  if (step.kind === "flash" || step.kind === "intro" || step.kind === "prayer") {
+  if (step.kind === "prayer") return null;
+  if (step.kind === "flash" || step.kind === "intro") {
     return (
       <div className="mt-6">
         <button onClick={onContinue} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold uppercase tracking-wide shadow-chunky active:translate-y-1 active:shadow-none">
-          {step.kind === "prayer" ? "Amém, começar o dia" : step.kind === "intro" ? "Começar lição" : "Continuar"}
+          {step.kind === "intro" ? "Começar lição" : "Continuar"}
         </button>
       </div>
     );
