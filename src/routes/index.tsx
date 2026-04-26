@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { DailyGoalCard } from "@/components/DailyGoalCard";
 import { JourneyPath, type Lesson } from "@/components/JourneyPath";
 import { GameModeHub } from "@/components/GameModeHub";
 import { getPsalmByDay, getChapters, TOTAL_DAYS } from "@/data/psalms";
-import { BookOpenCheck, ChevronLeft, ChevronRight, Flame, Music, Target } from "lucide-react";
+import { disableDailyReminder, registerForPushNotifications, scheduleDailyReminder } from "@/lib/nativeNotifications";
+import { getReminderSettings, isMissionCompletedToday, saveOfflineMission, syncOfflineMissions } from "@/lib/offlineMission";
+import { Bell, BookOpenCheck, CheckCircle2, ChevronLeft, ChevronRight, Flame, Music, Target, WifiOff } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +57,8 @@ function Index() {
           versePt={v1.pt}
         />
 
+        <MissionControl day={CURRENT_DAY} />
+
         <ProgressQuest />
 
         <GameModeHub />
@@ -95,6 +99,103 @@ function Index() {
         </p>
       </main>
     </div>
+  );
+}
+
+function MissionControl({ day }: { day: number }) {
+  const [done, setDone] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState("08:00");
+  const [message, setMessage] = useState("Pronto para salvar seu progresso mesmo sem internet.");
+
+  useEffect(() => {
+    const settings = getReminderSettings();
+    setReminderEnabled(settings.enabled);
+    setReminderTime(settings.time);
+    setDone(isMissionCompletedToday(day));
+    setOnline(typeof navigator === "undefined" ? true : navigator.onLine);
+
+    const onOnline = () => {
+      setOnline(true);
+      syncOfflineMissions().then((result) => {
+        if (result.synced > 0) setMessage("Missão offline sincronizada com sua conta.");
+      });
+    };
+    const onOffline = () => setOnline(false);
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    syncOfflineMissions();
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, [day]);
+
+  const completeMission = async () => {
+    saveOfflineMission(day, 30);
+    setDone(true);
+    setMessage(online ? "Missão concluída. Sincronizando quando sua conta estiver conectada." : "Missão salva offline. Vamos sincronizar quando a internet voltar.");
+    if (online) await syncOfflineMissions();
+  };
+
+  const toggleReminder = async () => {
+    if (reminderEnabled) {
+      await disableDailyReminder();
+      setReminderEnabled(false);
+      setMessage("Lembrete diário desativado.");
+      return;
+    }
+
+    await scheduleDailyReminder(reminderTime);
+    const push = await registerForPushNotifications();
+    setReminderEnabled(true);
+    setMessage(push.registered ? "Lembrete e push ativados para este dispositivo." : "Lembrete local ativado. Push completo será finalizado no app nativo publicado.");
+  };
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Missão e lembrete</p>
+          <h2 className="font-display text-xl font-bold">Não perca o dia</h2>
+        </div>
+        <div className={`flex size-10 items-center justify-center rounded-xl ${online ? "bg-success/10 text-success" : "bg-streak/10 text-streak"}`}>
+          {online ? <CheckCircle2 className="size-5" /> : <WifiOff className="size-5" />}
+        </div>
+      </div>
+
+      <p className="mt-2 text-sm font-semibold text-muted-foreground">{message}</p>
+
+      <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
+        <label className="rounded-xl border border-border bg-background px-3 py-2">
+          <span className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Horário</span>
+          <input
+            type="time"
+            value={reminderTime}
+            onChange={(event) => setReminderTime(event.target.value)}
+            className="mt-1 w-full bg-transparent font-bold text-foreground outline-none"
+          />
+        </label>
+        <button
+          onClick={toggleReminder}
+          className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 text-sm font-extrabold shadow-sm active:translate-y-0.5 ${reminderEnabled ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"}`}
+        >
+          <Bell className="size-4" />
+          {reminderEnabled ? "Ativo" : "Ativar"}
+        </button>
+      </div>
+
+      <button
+        onClick={completeMission}
+        disabled={done}
+        className="mt-3 w-full rounded-2xl bg-gradient-gold py-3 font-display text-lg font-bold text-primary-foreground shadow-chunky-gold active:translate-y-1 active:shadow-none disabled:opacity-70"
+      >
+        {done ? "Missão concluída hoje" : "Concluir missão offline"}
+      </button>
+    </section>
   );
 }
 
