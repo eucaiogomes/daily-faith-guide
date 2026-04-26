@@ -209,7 +209,7 @@ function LessonPage() {
 
       <main className="flex-1 max-w-md mx-auto w-full px-5 py-6 flex flex-col">
         <div key={idx} className="animate-pop-in flex-1">
-          {step.kind === "prayer" && <PrayerStep step={step} />}
+          {step.kind === "prayer" && <PrayerStep step={step} onComplete={next} />}
           {step.kind === "intro" && <IntroStep psalm={step.psalm} />}
           {step.kind === "flash" && <FlashCard step={step} />}
           {step.kind === "translate" && <TranslateExercise step={step} feedback={feedback} setFeedback={setFeedback} />}
@@ -229,7 +229,27 @@ function LessonPage() {
 
 /* ---------- Exercises ---------- */
 
-function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
+function PrayerStep({ step, onComplete }: { step: Extract<Step, { kind: "prayer" }>; onComplete: () => void }) {
+  const [lineIndex, setLineIndex] = useState(0);
+  const [tappedWords, setTappedWords] = useState<Set<string>>(new Set());
+  const [score, setScore] = useState<number | null>(null);
+  const { speak, speaking } = useSpeech();
+  const line = step.lines[lineIndex];
+
+  const tapWord = (word: string) => {
+    const cleaned = word.replace(/[^a-zA-Z']/g, "").toLowerCase();
+    if (!cleaned) return;
+    setTappedWords((prev) => new Set(prev).add(cleaned));
+    speak(word.replace(/[^a-zA-Z']/g, ""));
+  };
+
+  const nextPrayerLine = () => {
+    setScore(null);
+    setTappedWords(new Set());
+    if (lineIndex + 1 >= step.lines.length) onComplete();
+    else setLineIndex(lineIndex + 1);
+  };
+
   return (
     <div className="pt-2 text-center">
       <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-gold shadow-chunky-gold">
@@ -240,24 +260,54 @@ function PrayerStep({ step }: { step: Extract<Step, { kind: "prayer" }> }) {
       </p>
       <h1 className="mt-1 font-display text-3xl font-bold">Antes de começar</h1>
       <p className="mt-2 text-sm font-semibold text-muted-foreground">
-        Respire fundo e entregue este momento a Deus.
+        Linha {lineIndex + 1} de {step.lines.length} • ouça, toque nas palavras e repita.
       </p>
 
       <div className="mt-6 rounded-3xl border-2 border-border bg-card p-5 text-left shadow-soft">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-          Foco espiritual • {step.focus}
-        </p>
-        <div className="mt-4 space-y-3">
-          {step.lines.map((line, index) => (
-            <p key={line} className="flex gap-3 text-sm font-semibold leading-relaxed">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-extrabold text-secondary-foreground">
-                {index + 1}
-              </span>
-              <span>{line}</span>
-            </p>
-          ))}
+        <div className="mb-4 flex items-center gap-2">
+          <button
+            onClick={() => speak(line.en)}
+            aria-label="Ouvir oração"
+            className={`flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary active:scale-95 ${speaking ? "animate-pulse" : ""}`}
+          >
+            <Volume2 className="size-5" />
+          </button>
+          <button
+            onClick={() => speak(line.en, { rate: 0.6 })}
+            className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary"
+          >
+            🐢 Devagar
+          </button>
         </div>
+        <p className="font-display text-2xl leading-snug">
+          {line.en.split(" ").map((word, index) => {
+            const cleaned = word.replace(/[^a-zA-Z']/g, "").toLowerCase();
+            const isTapped = tappedWords.has(cleaned);
+            const isHighlight = line.highlight && cleaned === line.highlight.toLowerCase();
+            return (
+              <button
+                key={`${word}-${index}`}
+                onClick={() => tapWord(word)}
+                className={`mb-1 mr-1 inline-block rounded px-1 transition ${isHighlight ? "bg-gold/30 font-bold text-foreground" : "hover:bg-primary/10"} ${isTapped ? "text-primary underline decoration-2 underline-offset-4" : ""}`}
+              >
+                {word}
+              </button>
+            );
+          })}
+        </p>
+        <p className="mt-3 text-sm italic text-muted-foreground">{line.pt}</p>
       </div>
+
+      <div className="mt-6">
+        <p className="mb-3 text-sm text-muted-foreground">
+          {score !== null ? `Pronúncia: ${Math.round(score * 100)}%` : "Toque no microfone e repita a oração"}
+        </p>
+        <PronunciationRecorder expected={line.en} pt={line.pt} threshold={0.6} size="md" onResult={(result) => setScore(result.accuracy)} />
+      </div>
+
+      <button onClick={nextPrayerLine} className="mt-6 w-full rounded-2xl bg-primary py-4 font-bold uppercase tracking-wide text-primary-foreground shadow-chunky active:translate-y-1 active:shadow-none">
+        {lineIndex + 1 >= step.lines.length ? "Amém • Ir para aula" : "Próxima linha"}
+      </button>
     </div>
   );
 }
