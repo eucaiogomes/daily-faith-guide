@@ -163,6 +163,56 @@ const GUIDED_PRAYERS: GuidedPrayerLine[][] = [
     { en: "Give us discipline to stay focused, courage to try, and wisdom to learn even from challenges.", pt: "Dá-nos disciplina para manter o foco, coragem para tentar e sabedoria para aprender até com os desafios.", highlight: "courage" },
     { en: "Amen.", pt: "Amém.", highlight: "Amen" },
   ],
+  [
+    { en: "God, open our hearts and minds today.", pt: "Deus, abre nossos corações e mentes hoje.", highlight: "open" },
+    { en: "Help us not only to learn, but to grow as people, becoming wiser, calmer, and more patient.", pt: "Ajuda-nos não apenas a aprender, mas a crescer como pessoas, tornando-nos mais sábios, calmos e pacientes.", highlight: "grow" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, let this be a time of peace and learning.", pt: "Senhor, que este seja um tempo de paz e aprendizado.", highlight: "learning" },
+    { en: "Help us stay present, think clearly, and absorb everything that will help us grow.", pt: "Ajuda-nos a estar presentes, pensar com clareza e absorver tudo que nos ajudará a crescer.", highlight: "present" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear God, we ask for calm minds and focused hearts.", pt: "Querido Deus, pedimos mentes calmas e corações focados.", highlight: "focused" },
+    { en: "Help us to be present in this moment and give our best in everything we do.", pt: "Ajuda-nos a estar presentes neste momento e dar o nosso melhor em tudo que fazemos.", highlight: "best" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, guide our thoughts and give us understanding.", pt: "Pai, guia nossos pensamentos e dá-nos entendimento.", highlight: "thoughts" },
+    { en: "Help us to learn with intention and carry this knowledge with us beyond this moment.", pt: "Ajuda-nos a aprender com intenção e levar este conhecimento além deste momento.", highlight: "knowledge" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, fill this moment with Your peace.", pt: "Senhor, enche este momento com a Tua paz.", highlight: "peace" },
+    { en: "Remove anxiety and confusion, and replace it with clarity, wisdom, and confidence.", pt: "Remove a ansiedade e a confusão, e substitui por clareza, sabedoria e confiança.", highlight: "confidence" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, help us to be patient with ourselves and with the process of learning.", pt: "Deus, ajuda-nos a ser pacientes conosco e com o processo de aprender.", highlight: "patient" },
+    { en: "Give us strength to keep going and not give up.", pt: "Dá-nos força para continuar e não desistir.", highlight: "strength" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear Lord, as we begin, help us to be mindful and focused.", pt: "Querido Senhor, ao começarmos, ajuda-nos a estar atentos e focados.", highlight: "mindful" },
+    { en: "Let this be a time of growth, learning, and inner peace.", pt: "Que este seja um tempo de crescimento, aprendizado e paz interior.", highlight: "growth" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, thank You for this opportunity.", pt: "Pai, obrigado por esta oportunidade.", highlight: "opportunity" },
+    { en: "Help us to value this moment and make the most of it with attention and dedication.", pt: "Ajuda-nos a valorizar este momento e aproveitá-lo ao máximo com atenção e dedicação.", highlight: "dedication" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, guide our minds and give us clarity in everything we do.", pt: "Senhor, guia nossas mentes e dá-nos clareza em tudo que fazemos.", highlight: "clarity" },
+    { en: "Help us to understand deeply and remember what is important.", pt: "Ajuda-nos a entender profundamente e lembrar o que é importante.", highlight: "remember" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, we place this moment in Your hands.", pt: "Deus, colocamos este momento em Tuas mãos.", highlight: "hands" },
+    { en: "Lead us with wisdom, fill us with peace, and help us to grow in knowledge and understanding.", pt: "Conduz-nos com sabedoria, enche-nos de paz e ajuda-nos a crescer em conhecimento e entendimento.", highlight: "wisdom" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
 ];
 
 function buildGuidedPrayer(psalm: PsalmLesson): GuidedPrayerLine[] {
