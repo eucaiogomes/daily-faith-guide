@@ -18,7 +18,7 @@ export const Route = createFileRoute("/lesson/$day")({
 });
 
 type Step =
-  | { kind: "prayer"; psalm: PsalmLesson; lines: string[]; focus: string }
+  | { kind: "prayer"; psalm: PsalmLesson; lines: GuidedPrayerLine[]; focus: string }
   | { kind: "translate"; en: string; pt: string; words: string[] }
   | { kind: "choice"; prompt: string; options: { text: string; correct: boolean }[] }
   | { kind: "fill"; sentence: string[]; blank: number; options: string[]; answer: string }
@@ -133,14 +133,40 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function buildGuidedPrayer(psalm: PsalmLesson): string[] {
-  const keyword = psalm.keywords[0];
-  return [
-    "Senhor, prepara meu coração para aprender com a Tua Palavra hoje.",
-    `Guia minha mente no tema de ${psalm.theme.toLowerCase()} e me ajuda a praticar inglês com alegria.`,
-    keyword ? `Que eu memorize ${keyword.en} — ${keyword.pt} — e use essa palavra com fé.` : "Que cada palavra fique guardada no meu coração.",
-    "Amém.",
-  ];
+type GuidedPrayerLine = { en: string; pt: string; highlight?: string };
+
+const GUIDED_PRAYERS: GuidedPrayerLine[][] = [
+  [
+    { en: "Dear God, thank You for this new day.", pt: "Querido Deus, obrigado por este novo dia.", highlight: "God" },
+    { en: "As we begin, we ask for Your presence with us.", pt: "Ao começarmos, pedimos a Tua presença conosco.", highlight: "presence" },
+    { en: "Give us wisdom to understand, strength to keep going, and hearts willing to learn and grow.", pt: "Dá-nos sabedoria para entender, força para continuar e corações dispostos a aprender e crescer.", highlight: "wisdom" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Lord, we come before You with open hearts.", pt: "Senhor, chegamos diante de Ti com corações abertos.", highlight: "Lord" },
+    { en: "Guide our minds, calm our thoughts, and help us receive what we need today.", pt: "Guia nossas mentes, acalma nossos pensamentos e ajuda-nos a receber o que precisamos hoje.", highlight: "Guide" },
+    { en: "Let this moment be filled with peace and purpose.", pt: "Que este momento seja cheio de paz e propósito.", highlight: "peace" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "God, thank You for the opportunity to learn and grow.", pt: "Deus, obrigado pela oportunidade de aprender e crescer.", highlight: "opportunity" },
+    { en: "Help us to be attentive, patient, and humble, so we can truly understand and use what we receive today.", pt: "Ajuda-nos a ser atentos, pacientes e humildes, para realmente entender e usar o que recebemos hoje.", highlight: "patient" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Dear Lord, as we start this moment, we ask for clarity and focus.", pt: "Querido Senhor, ao iniciar este momento, pedimos clareza e foco.", highlight: "clarity" },
+    { en: "Remove distractions and fill our minds with good thoughts and understanding.", pt: "Remove as distrações e enche nossas mentes com bons pensamentos e entendimento.", highlight: "understanding" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+  [
+    { en: "Father, we trust You with this time.", pt: "Pai, confiamos este tempo a Ti.", highlight: "Father" },
+    { en: "Give us discipline to stay focused, courage to try, and wisdom to learn even from challenges.", pt: "Dá-nos disciplina para manter o foco, coragem para tentar e sabedoria para aprender até com os desafios.", highlight: "courage" },
+    { en: "Amen.", pt: "Amém.", highlight: "Amen" },
+  ],
+];
+
+function buildGuidedPrayer(psalm: PsalmLesson): GuidedPrayerLine[] {
+  return GUIDED_PRAYERS[(psalm.day - 1) % GUIDED_PRAYERS.length];
 }
 
 function LessonPage() {
